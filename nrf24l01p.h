@@ -1,8 +1,7 @@
 #ifndef NRF24L01P_H
 #define NRF24L01P_H
 
-#include "hal_stm32f4.h"
-
+#include "hardware.h"
 /*
 Platform independent NRF24L01+ library
 

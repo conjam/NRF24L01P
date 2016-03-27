@@ -49,13 +49,13 @@ void writePayload(uint8_t* payload, uint8_t payloadSize) {
   spiXmitByte(CMD_W_TX_PAYLOAD);
   for(i = 0; i < payloadSize; i++)
     spiXmitByte(payload[i]);
-  csnHigh();  
+  csnHigh();
 }
 
 uint8_t nrf24_shockburstIsEnabled(uint8_t pipeId) {
   RegNrf24EN_AA_t enaa;
   readRegisterB(REG_EN_AA, &enaa);
-  
+
   switch(pipeId) {
     case 0: return enaa.enaa_p0;
     case 1: return enaa.enaa_p1;
@@ -70,7 +70,7 @@ uint8_t nrf24_shockburstIsEnabled(uint8_t pipeId) {
 void nrf24_enableCRC(uint8_t numBytes) {
   RegNrf24CONFIG_t config;
   readRegisterB(REG_CONFIG, &config);
-  
+
   switch(numBytes) {
     case 0:
       config.en_crc = 0;
@@ -87,7 +87,7 @@ void nrf24_enableCRC(uint8_t numBytes) {
     default:
       break;
   }
-  
+
   writeRegisterB(REG_CONFIG, &config);
 }
 
@@ -102,7 +102,7 @@ void nrf24_listenMode(uint8_t enable) {
   // delay transition between rx and tx must be at least 130us
   // else the chip meight crash.
   delayUs(200);
-  
+
   RegNrf24CONFIG_t config;
   readRegisterB(REG_CONFIG, &config);
   config.prim_rx = enable;
@@ -118,7 +118,7 @@ void nrf24_listenMode(uint8_t enable) {
 void nrf24_enableShockburst(uint8_t pipeId, uint8_t enable) {
   RegNrf24EN_AA_t enaa;
   readRegisterB(REG_EN_AA, &enaa);
-  
+
   switch(pipeId) {
     case 0: enaa.enaa_p0 = enable; break;
     case 1: enaa.enaa_p1 = enable; break;
@@ -127,7 +127,7 @@ void nrf24_enableShockburst(uint8_t pipeId, uint8_t enable) {
     case 4: enaa.enaa_p4 = enable; break;
     case 5: enaa.enaa_p5 = enable; break;
   }
-  
+
   writeRegisterB(REG_EN_AA, &enaa);
 }
 
@@ -135,7 +135,7 @@ void nrf24_enableShockburst(uint8_t pipeId, uint8_t enable) {
 void nrf24_enableDataPipe(uint8_t pipeId, uint8_t enable) {
   RegNrf24EN_RXADDR_t enrxaddr;
   readRegisterB(REG_EN_RXADDR, &enrxaddr);
-  
+
   switch(pipeId) {
     case 0: enrxaddr.erx_p0 = enable; break;
     case 1: enrxaddr.erx_p1 = enable; break;
@@ -144,7 +144,7 @@ void nrf24_enableDataPipe(uint8_t pipeId, uint8_t enable) {
     case 4: enrxaddr.erx_p4 = enable; break;
     case 5: enrxaddr.erx_p5 = enable; break;
   }
-  
+
   writeRegisterB(REG_EN_RXADDR, &enrxaddr);
 }
 
@@ -166,27 +166,27 @@ void nrf24_setRFChannel(uint8_t channel) {
 void nrf24_setDataRate(uint8_t dataRate) {
   RegNrf24RF_SETUP_t rfSetup;
   readRegisterB(REG_RF_SETUP, &rfSetup);
-  
+
   switch(dataRate) {
     case SPEED_250K:
       rfSetup.rf_dr_low  = 1;
       rfSetup.rf_dr_high = 0;
       break;
-      
+
     case SPEED_1M:
       rfSetup.rf_dr_low  = 0;
       rfSetup.rf_dr_high = 0;
       break;
-      
+
     case SPEED_2M:
       rfSetup.rf_dr_low  = 0;
-      rfSetup.rf_dr_high = 1;   
+      rfSetup.rf_dr_high = 1;
       break;
-      
+
     default:
       break;
   }
-  
+
   writeRegisterB(REG_RF_SETUP, &rfSetup);
 }
 
@@ -200,9 +200,9 @@ void nrf24_setXmitPower(uint8_t powerLevel) {
 // TODO: refactor for subaddresses?
 void nrf24_setRxAddress(uint8_t pipeId, uint8_t* rxAddr) {
   uint8_t addressWidth = nrf24_getAddressWidths();
-  
+
   switch(pipeId) {
-    case 0: 
+    case 0:
       writeRegister(REG_RX_ADDR_P0, rxAddr, addressWidth);
       break;
     case 1:
@@ -244,9 +244,9 @@ void nrf24_setPayloadSize(uint8_t pipeId, uint8_t size) {
 
 uint8_t nrf24_getRxAddress(uint8_t pipeId, uint8_t* rxAddr) {
   uint8_t addressWidth = nrf24_getAddressWidths();
-  
+
   switch(pipeId) {
-    case 0: 
+    case 0:
       readRegister(REG_RX_ADDR_P0, rxAddr, addressWidth);
       break;
     case 1:
@@ -322,7 +322,7 @@ uint8_t nrf24_getCurrentRxPipe() {
 uint8_t nrf24_getDataRate() {
   RegNrf24RF_SETUP_t rfSetup;
   readRegisterB(REG_RF_SETUP, &rfSetup);
-  
+
   if(rfSetup.rf_dr_low)
     return SPEED_250K;
   else if(rfSetup.rf_dr_high)
@@ -339,9 +339,9 @@ uint8_t nrf24_isListening() {
 
 uint8_t nrf24_getPayloadSize(uint8_t pipeId) {
   uint8_t size;
-  
+
   switch(pipeId) {
-    case 0: 
+    case 0:
       readRegisterB(REG_RX_PW_P0, &size);
       break;
     case 1:
@@ -362,29 +362,29 @@ uint8_t nrf24_getPayloadSize(uint8_t pipeId) {
     default:
       break;
   }
-  
+
   return size;
 }
 
 uint8_t nrf24_getPayloadSizeRxFifoTop() {
   uint8_t size;
-  
+
   csnLow();
   spiXmitByte(CMD_R_RX_PL_WID);
   size = spiXmitByte(0x00);
   csnHigh();
-  
+
   return size;
 }
 
 uint32_t nrf24_recvPacket(void* packet) {
   if(!nrf24_isPoweredOn())
     return NRF_DEVICE_NOT_POWERED_ON;
-  
+
   uint8_t pipeId = nrf24_getCurrentRxPipe();
   if(pipeId == RX_P_NO_FIFO_EMPTY)
     return NRF_NO_DATA_AVAILABLE;
-  
+
   return readPayload((uint8_t*)packet);
 }
 
@@ -395,7 +395,7 @@ void clearRxInterrupt() {
   writeRegisterB(REG_STATUS, &status);
 }
 
-void nrf24_flushRxFifo() {  
+void nrf24_flushRxFifo() {
   csnLow();
   spiXmitByte(CMD_FLUSH_RX);
   csnHigh();
@@ -422,8 +422,8 @@ int8_t nrf24_sendPacket(void* packet, int8_t payloadSize, uint8_t listenAfterSen
   writePayload((uint8_t*)packet, payloadSize);
 
   // To initially start a transmission, it is important that something in the TX FIFO
-  // before pulling the chip enable pin high. If chip enable is already set when the payload is empty, 
-  // the transmission will NOT be initiated before ce got pulled low and high again!   
+  // before pulling the chip enable pin high. If chip enable is already set when the payload is empty,
+  // the transmission will NOT be initiated before ce got pulled low and high again!
   if(!getCe()) {
     ceHigh();
     delayUs(10); // Delay from CE positive edge to CSN low
@@ -447,11 +447,14 @@ uint8_t nrf24_txFifoIsEmpty() {
   return fifostatus.tx_empty;
 }
 
+
+
 void checkForCooldown() {
   if(!nrf24_txFifoIsEmpty())
     if(txCooldownTimeMs_ == 0)
-      txCooldownTimeMs_ = getTickMillis(); // start the timer
-    else if(getTickMillis() - txCooldownTimeMs_ >= TX_COOLDOWN_TIME) {
+      txCooldownTimeMs_ = (clock() / 100000); // start the timer. CHANGED from coon-42 implimentation. This is lazy. Should change 
+											  // to actually having a timer. But the cooldown period should _never_ happen
+    else if((clock() / 100000) - txCooldownTimeMs_ >= TX_COOLDOWN_TIME) {
       while(!nrf24_txFifoIsEmpty()); // wait for empty FIFO so the transmitter can go to standby I mode and gets a little cooldown.
       txCooldownTimeMs_ = 0; // reset the timer
     }
@@ -473,3 +476,4 @@ void nrf24_init(uint8_t channel) {
   nrf24_setRFChannel(channel);
   nrf24_listenMode(TRUE);
 }
+
